@@ -1,0 +1,533 @@
+{
+  "name": "webhook form",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -520,
+        85
+      ],
+      "id": "bce984e6-3fee-43cb-ac85-d27e17450ae1",
+      "name": "When chat message received",
+      "webhookId": "5f18d51b-1118-46d5-a31d-a089aba0a92e"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-flash-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1500,
+        120
+      ],
+      "id": "1e64f999-8a19-4345-9ccf-1a31aae990d6",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OGnK78x9dBsbaJZ0",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let ent = $input.first().json.chatInput;\nent = ent.split(\" \").join('+');\nreturn [{ent}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -300,
+        85
+      ],
+      "id": "40317ab7-d555-4a2f-99ca-7892f2efe5e7",
+      "name": "search query"
+    },
+    {
+      "parameters": {
+        "url": "=https://515e4212abb0.ngrok-free.app/MLC/api/location/get-webSites?s={{ $json.ent }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -80,
+        80
+      ],
+      "id": "adc00b7e-9da6-46de-8481-0dcaf82af9ae",
+      "name": "retrieve locations links"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nreturn [{ urls: $input.first().json.urls}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        360,
+        85
+      ],
+      "id": "56c598e2-90f5-4b87-ae57-95e965dbc363",
+      "name": "claim urls "
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "urls",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        580,
+        85
+      ],
+      "id": "0d830e80-6306-42be-84c4-57d86cb0299a",
+      "name": "loop over urls"
+    },
+    {
+      "parameters": {
+        "url": "=https://catfact.ninja/facts",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "siteUrl",
+              "value": "=https://catfact.ninja/facts"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        -100
+      ],
+      "id": "1cbb39a2-3a4c-4f02-9501-eb8784657835",
+      "name": "retrieve locations first page emails and links"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=tell if fact or lie and correct the lie : \"{{ $json.data[0].fact }}\"",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1480,
+        -100
+      ],
+      "id": "130f7f33-0a7e-4f5d-89d5-184586590b80",
+      "name": "filter urls for potential contact pages"
+    },
+    {
+      "parameters": {
+        "url": "=https://catfact.ninja/facts",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2300,
+        60
+      ],
+      "id": "b02a91ba-ce36-48e6-a896-3d23caf7d994",
+      "name": "retrieve contacts"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1385zW-2zJaMXGybET8ka7_DP7Jx85N5agTh1cbLums0",
+          "mode": "list",
+          "cachedResultName": "Maps_Leads_collect",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1385zW-2zJaMXGybET8ka7_DP7Jx85N5agTh1cbLums0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1385zW-2zJaMXGybET8ka7_DP7Jx85N5agTh1cbLums0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "webSite": "={{ $json.first_page_url }}",
+            "emails": "={{ $json.total }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "webSite",
+              "displayName": "webSite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "emails",
+              "displayName": "emails",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1260,
+        -100
+      ],
+      "id": "ddb0843f-8589-4be6-9035-558db6be3fba",
+      "name": "store initial mails",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JwrHm9k5CEum4PLl",
+          "name": "Google Sheets account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nreturn [{potentialUrls: [1,2,3,4,5]}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1860,
+        -100
+      ],
+      "id": "3b288c36-dd3e-4ab3-8851-ef517aaffdfc",
+      "name": "claim potentiel urls"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        800,
+        85
+      ],
+      "id": "a2eb12da-a15f-486d-a721-ffc464a7546a",
+      "name": "Loop over urls"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2060,
+        100
+      ],
+      "id": "d188c2e1-4b2b-4aa1-a5a1-4e2a44997ca6",
+      "name": "Loop Over sub-urls"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1385zW-2zJaMXGybET8ka7_DP7Jx85N5agTh1cbLums0",
+          "mode": "list",
+          "cachedResultName": "Maps_Leads_collect",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1385zW-2zJaMXGybET8ka7_DP7Jx85N5agTh1cbLums0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1385zW-2zJaMXGybET8ka7_DP7Jx85N5agTh1cbLums0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "emails": "={{([...[12,34,56], ...[123,234]]).join(',')}}",
+            "webSite": "={{ $json.first_page_url }}"
+          },
+          "matchingColumns": [
+            "webSite"
+          ],
+          "schema": [
+            {
+              "id": "webSite",
+              "displayName": "webSite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "emails",
+              "displayName": "emails",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        2520,
+        120
+      ],
+      "id": "30fe5de0-28e8-42d3-8744-cf05aa9ea34e",
+      "name": "store emails",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JwrHm9k5CEum4PLl",
+          "name": "Google Sheets account 4"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "retrieve locations links": [
+      {
+        "json": {
+          "status": "success",
+          "urls": [
+            "https://www.stpierre-bru.be/",
+            "https://www.hopitalmilitaire.be/home_fr.php",
+            "http://www.uzbrussel.be/",
+            "https://www.clstjean.be/?utm_source=gmb&utm_medium=fiche&utm_campaign=general",
+            "https://www.chu-brugmann.be/",
+            "https://www.cliniquesdeleurope.be/en/site/st-elisabeth",
+            "http://www.huderf.be/",
+            "http://www.saintluc.be/",
+            "http://www.erasme.ulb.ac.be/",
+            "https://www.cliniquesdeleurope.be/en/site/st-michel",
+            "https://www.chu-brugmann.be/fr/med/urgen/",
+            "http://www.his-izz.be/",
+            "https://www.louise-medicalcenter.be/",
+            "http://www.bordet.be/"
+          ]
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "search query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "filter urls for potential contact pages",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search query": {
+      "main": [
+        [
+          {
+            "node": "retrieve locations links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "retrieve locations links": {
+      "main": [
+        [
+          {
+            "node": "claim urls ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "claim urls ": {
+      "main": [
+        [
+          {
+            "node": "loop over urls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "loop over urls": {
+      "main": [
+        [
+          {
+            "node": "Loop over urls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "retrieve locations first page emails and links": {
+      "main": [
+        [
+          {
+            "node": "store initial mails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "filter urls for potential contact pages": {
+      "main": [
+        [
+          {
+            "node": "claim potentiel urls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "store initial mails": {
+      "main": [
+        [
+          {
+            "node": "filter urls for potential contact pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "claim potentiel urls": {
+      "main": [
+        [
+          {
+            "node": "Loop Over sub-urls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "retrieve contacts": {
+      "main": [
+        [
+          {
+            "node": "store emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop over urls": {
+      "main": [
+        [],
+        [
+          {
+            "node": "retrieve locations first page emails and links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over sub-urls": {
+      "main": [
+        [
+          {
+            "node": "Loop over urls",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "retrieve contacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "store emails": {
+      "main": [
+        [
+          {
+            "node": "Loop Over sub-urls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "73285922-797f-463e-9962-ed7115f71989",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "13dbdb0b7de4b57ec95450da6ae468b5174966d138912fd4acd4d1c4846b3046"
+  },
+  "id": "zexRmvgmTwAcV32J",
+  "tags": []
+}

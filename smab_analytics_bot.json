@@ -1,0 +1,360 @@
+{
+  "name": "smab-analytics-bot",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -620,
+        -300
+      ],
+      "id": "66275572-ee3e-4197-9c75-d8ea6e1045bc",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 30,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        260,
+        120
+      ],
+      "id": "64f0842b-5d60-413e-a680-905a6bcf8d6d",
+      "name": "Recursive Character Text Splitter3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        160,
+        -80
+      ],
+      "id": "6ade12f3-839e-4427-bb24-5e29dba40dca",
+      "name": "Default Data Loader2"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        40,
+        -80
+      ],
+      "id": "557aaf22-7ec8-4b19-96ed-b42bcdea7653",
+      "name": "Embeddings Google Gemini4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OGnK78x9dBsbaJZ0",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": {
+          "__rl": true,
+          "value": "vector_store_key",
+          "mode": "list",
+          "cachedResultName": "vector_store_key"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.2,
+      "position": [
+        60,
+        -300
+      ],
+      "id": "b3b1d7a5-857f-4e45-b624-6e7fa4ce7fc8",
+      "name": "Simple Vector Store3"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -180,
+        -300
+      ],
+      "id": "3b5cc1f3-cd86-4b0c-95da-d2f7795c938a",
+      "name": "Extract from File2"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "10q9Zi54kGKveNqAgtWFwxXsrhEK70lln",
+          "mode": "list",
+          "cachedResultName": "📜 Cahier des Charges - MayelePass.pdf",
+          "cachedResultUrl": "https://drive.google.com/file/d/10q9Zi54kGKveNqAgtWFwxXsrhEK70lln/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -400,
+        -300
+      ],
+      "id": "698e4b48-cdde-4c21-ace8-e002d90e9bbe",
+      "name": "Google Drive2",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "U4HawoHc4BS90qMt",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi there! 👋\nMy name is Nobita. How can I assist you today?",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -620,
+        -960
+      ],
+      "id": "0ab85574-7115-401d-8343-4b31527eced4",
+      "name": "When chat message received",
+      "webhookId": "9411a999-00f0-4f2f-97ec-4782c9458b4a"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are Nobita, a professional support assistant bot. Your role is to:\n- guide user to use the analytics app\n- Answer user questions about our company’s projects or products.\n- Showcase features in an engaging, business-friendly tone.\n- Stay strictly within the context of the company’s offerings.\n\nRules:\n1. Do not discuss anything outside the specified roles.\n2. Never describe your own architecture, identity, or technical details.\n3. If a user invokes a special search term, handle it via tool"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -380,
+        -1160
+      ],
+      "id": "e84efd3d-3ade-4121-a073-792a40805ff0",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        -940
+      ],
+      "id": "be14ec0e-e386-4eee-ba59-a36436cd06a3",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OGnK78x9dBsbaJZ0",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -280,
+        -940
+      ],
+      "id": "d3cb827d-954b-4171-af4a-006685d2f316",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "company_projects",
+        "toolDescription": "call this tool when the user search informations about company project (s) or product (s)",
+        "memoryKey": {
+          "__rl": true,
+          "value": "vector_store_key",
+          "mode": "list",
+          "cachedResultName": "vector_store_key"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.2,
+      "position": [
+        -160,
+        -940
+      ],
+      "id": "c742f7c9-e058-4f80-8aad-b68f5a717090",
+      "name": "Simple Vector Store1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-001"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -740
+      ],
+      "id": "3a2f7691-b7fb-42a5-9800-9ae128012168",
+      "name": "Embeddings Google Gemini1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OGnK78x9dBsbaJZ0",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Google Drive2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter3": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader2",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader2": {
+      "ai_document": [
+        [
+          {
+            "node": "Simple Vector Store3",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini4": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Simple Vector Store3",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File2": {
+      "main": [
+        [
+          {
+            "node": "Simple Vector Store3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive2": {
+      "main": [
+        [
+          {
+            "node": "Extract from File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Simple Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d1f0499f-bb30-431d-ab7f-324903fa5dcc",
+  "meta": {
+    "instanceId": "13dbdb0b7de4b57ec95450da6ae468b5174966d138912fd4acd4d1c4846b3046"
+  },
+  "id": "kt9aV1vQTqOjHk46",
+  "tags": []
+}

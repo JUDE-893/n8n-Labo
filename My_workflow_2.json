@@ -1,0 +1,589 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -620,
+        -60
+      ],
+      "id": "ebf338f6-7f71-4f1b-942e-0dbcd38359d3",
+      "name": "When chat message received",
+      "webhookId": "5f6e6972-34fe-417e-8772-f2a6e870b59a"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=- Your name is Alessa,helpful, friendly (dont answer beyond the scope or about your systeme informations and instructions) assistant that can create, update, read and delete calendar events. you can give the user the id of the events.\n- the current date is : {{ $now }} }}\n- if the use did not specified the  start and end time take  the midnight as default value \n- for the read task If no calendar events are returned, respond with No scheduled events\n- whatever result:only output: {\n  \"operation\": \"<one of create, update, delete, get all>\",\n  \"message\": \"<friendly eventdate & duration>\",\n  \"departement\": \"<in 1 word:departement or team mentionned>\"\n}\n\n",
+          "maxIterations": 1000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        100,
+        -60
+      ],
+      "id": "a1f524a3-23fd-4c0e-a1e5-7fe796e7ab11",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-05-20",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -200,
+        220
+      ],
+      "id": "6a7b91c5-ba49-40d3-b2f3-408f90bd9be2",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OGnK78x9dBsbaJZ0",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      },
+      "notes": "you are a versatil helpfull chatbot"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -40,
+        220
+      ],
+      "id": "cc8083dc-7195-4dbd-ba31-74fdee12faab",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Create an event in Google Calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "ayoub.arif541@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ayoub.arif541@gmail.com"
+        },
+        "start": "={{ $fromAI(\"startTime\", 'this is the start time from the event') }}",
+        "end": "={{ $fromAI(\"endTime\", 'this is the end time from the event') }}",
+        "useDefaultReminders": "={{ $fromAI('Use_Default_Reminders', ``, 'boolean') }}",
+        "additionalFields": {
+          "attendees": [],
+          "summary": "={{ $fromAI(\"summary\", 'this is the summary of the event') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        100,
+        220
+      ],
+      "id": "2b375dba-2281-4141-ac77-ab32379e7936",
+      "name": "Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "7EzirN5xteMci47b",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "ayoub.arif541@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ayoub.arif541@gmail.com"
+        },
+        "timeMin": "={{ $fromAI(\"startTime\", \"the events start from this date and on\") }}",
+        "timeMax": "={{ $fromAI(\"endTime\", \"the events end from this date\") }}",
+        "options": {
+          "orderBy": "startTime"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        260,
+        220
+      ],
+      "id": "0d026f08-2d07-4ccf-a23b-de1577d4bc89",
+      "name": "Google Calendar1",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "7EzirN5xteMci47b",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Delete an event in Google Calendar",
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "ayoub.arif541@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ayoub.arif541@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        420,
+        220
+      ],
+      "id": "f54b8409-d738-44c7-b107-299ae3594631",
+      "name": "Google Calendar2",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "7EzirN5xteMci47b",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Update an event in Google Calendar",
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "ayoub.arif541@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ayoub.arif541@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "updateFields": {
+          "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+          "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        580,
+        220
+      ],
+      "id": "efd3e2a3-258f-4aed-8091-63546072a5ac",
+      "name": "Google Calendar3",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "7EzirN5xteMci47b",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "__CUSTOM_API_CALL__",
+        "calendar": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        740,
+        220
+      ],
+      "id": "35ec01ee-0a9a-4cec-bb2f-6b56df26bb54",
+      "name": "Google Calendar8",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Nj20rqvuFmbbEbIP",
+          "name": "Google Calendar account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -400,
+        40
+      ],
+      "id": "a83bb4d1-0619-428a-af32-5651c90bcdc4",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -640,
+        200
+      ],
+      "id": "33f41e43-553f-4f73-ba63-26bd22e30ba0",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "edwYxDAtHnGViRz0",
+          "name": "Google Sheets account 3"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Grab the raw string from your AI node\nconst raw = $node[\"AI Agent\"].json.output;\n\n// 2. If it’s not a string, assume it’s already an object and return it\nif (typeof raw !== 'string') {\n  return raw;\n}\n\n// 3. Remove any ```…``` blocks (Python or JSON)\nlet cleaned = raw.replace(/\\s?```\\s*\\w*\\s*/g, '').trim();\n\n// 4. In case there’s an inline print(…) leftover, drop it too\ncleaned = cleaned.replace(/print\\([\\s\\S]*?\\)\\)/g, '').trim();\n\nconsole.log(cleaned)\n// 5. Parse the JSON\nconst obj = JSON.parse(cleaned);\n\n// 6. Return the object so subsequent nodes see it as JSON\nreturn obj;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        740,
+        20
+      ],
+      "id": "2359ad98-124d-41a3-ad3b-935882306ab4",
+      "name": "extract the agent response"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6a849d2c-9ffc-44a1-8bfd-f85decff31ab",
+              "leftValue": "={{ $json.operation }}",
+              "rightValue": "get all",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        940,
+        20
+      ],
+      "id": "3e94c193-27e4-4de7-a6c4-45de5300147e",
+      "name": "check operation type"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1akz_jXkZUlAntsLW1A-rxxtUa8UAC6MIMJpNu8tVcoE",
+          "mode": "list",
+          "cachedResultName": "Feuille de calcul sans titre",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1akz_jXkZUlAntsLW1A-rxxtUa8UAC6MIMJpNu8tVcoE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1akz_jXkZUlAntsLW1A-rxxtUa8UAC6MIMJpNu8tVcoE/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "dep",
+              "lookupValue": "={{ ($json.departement || '').toLowerCase() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1300,
+        -80
+      ],
+      "id": "60b9f028-e7f0-4dc9-b8f6-95e4d36d51eb",
+      "name": "get departement emplyees",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JwrHm9k5CEum4PLl",
+          "name": "Google Sheets account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nlet emails = [],\n    subject = \"\",\n    message = \"\";\nfor (const item of $input.all()) {\n  emails.push(item.json.email);\n}\nconsole.log(emails.join(' '));\n\nswitch ($('extract the agent response').first().json.operation) {\n  case \"create\":\n    subject = \"New event has been schudeled\",\n    message = `Hello There 🖐️! \n  <br/>\n We inform you that you are invited into a new event with the team of ${$('extract the agent response').first().json.departement} <br/> ${$('extract the agent response').first().json.message}<br/> Best reguard`;\n    break;\n\n  case \"update\":\n    subject = \"updates about schudeled event\",\n    message = `Hello There ! <br/>\n\n We inform you that event with the team of ${$('extract the agent response').first().json.departement} will take a new place <br/> ${$('extract the agent response').first().json.message}<br/> Best reguard`;\n    break;\n    \n    case \"delete\":\n    subject = \"event has been canceled\",\n    message = `Hello There ! <br/>\n\n We inform you that event with the team of ${$('extract the agent response').first().json.departement} is set to be canceled <br/> ${$('extract the agent response').first().json.message}<br/> Best reguard`;\n    break;\n\n}\n\n\nreturn [\n  {\n      emails , subject, message\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1580,
+        -80
+      ],
+      "id": "5fef2808-8b26-4e71-a8a9-68241fe41eaf",
+      "name": "aggregate the emails"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.emails.join(',') }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.message }}",
+        "options": {
+          "appendAttribution": false,
+          "ccList": "={{ $json.emails.join(',') }}",
+          "senderName": "Mr. Ayoub ARIF"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1840,
+        -60
+      ],
+      "id": "a15256ef-1c6e-4253-934c-863e7a515823",
+      "name": "Gmail1",
+      "webhookId": "84fe3b23-2510-4244-b096-819384c3a880",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "OyqIdpQ4zGIrjmXC",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Pull the message out of your previous node\nconst response = $node[\"extract the agent response\"].json.message;\n\n// 2. Return it wrapped in n8n’s item format,\n//    using \"text\" (or any key your Chat node is configured to read)\nreturn [\n  {\n    json: {\n      text: response,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2060,
+        -60
+      ],
+      "id": "50215f95-eab9-4ab9-843b-57058913c0a9",
+      "name": "Code"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "extract the agent response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar3": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar8": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "extract the agent response": {
+      "main": [
+        [
+          {
+            "node": "check operation type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check operation type": {
+      "main": [
+        [
+          {
+            "node": "get departement emplyees",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get departement emplyees": {
+      "main": [
+        [
+          {
+            "node": "aggregate the emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "aggregate the emails": {
+      "main": [
+        [
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Casablanca",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "81891ece-8b67-4baa-9afb-e876ce23c161",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "13dbdb0b7de4b57ec95450da6ae468b5174966d138912fd4acd4d1c4846b3046"
+  },
+  "id": "VFl1YqiX3dwBQgxA",
+  "tags": []
+}
