@@ -1,0 +1,292 @@
+{
+  "name": "RAG Sys / admin",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant\nyour only task is restricted within the available tools (list files & upload new file)\nanything else you should never respond to\n\n\n",
+          "passthroughBinaryImages": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        592,
+        752
+      ],
+      "id": "c0ceca31-fe62-4198-b884-ac1748d36415",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "allowFileUploads": true,
+          "allowedFilesMimeTypes": "*"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -240,
+        1024
+      ],
+      "id": "20d50a04-e9b0-4afc-9a06-b679f7a8f28c",
+      "name": "When chat message received",
+      "webhookId": "3bb42b8e-5292-43ed-8e7d-e23c5a828640"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "use to list availabe files",
+        "resource": "fileFolder",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1a2nbogZyvkNOFTVr46XdIBEBI9ePDrMu",
+            "mode": "list",
+            "cachedResultName": "Agent",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1a2nbogZyvkNOFTVr46XdIBEBI9ePDrMu"
+          },
+          "whatToSearch": "files"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "position": [
+        720,
+        1008
+      ],
+      "id": "f14e579a-08ef-4d45-b451-158f5fd9966c",
+      "name": "Search files to list",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "dOTQooioTFbHjRlL",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When chat message received').item.json.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        592,
+        1008
+      ],
+      "id": "b462f58f-9d29-4054-9ee1-93593005e781",
+      "name": "Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "jrVuFQHWZ9pBOfZW",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "30b7e573-c05c-4dfb-b5cc-18492e0eb731",
+              "leftValue": "={{ $json.files[0].fileName }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -32,
+        1024
+      ],
+      "id": "f57a4df4-c5cb-42c7-914a-fb2c61a5dccf",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "={{ $json.files[0].binaryKey }}",
+        "name": "={{ $json.files[0].fileName }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1a2nbogZyvkNOFTVr46XdIBEBI9ePDrMu",
+          "mode": "list",
+          "cachedResultName": "Agent",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1a2nbogZyvkNOFTVr46XdIBEBI9ePDrMu"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        240,
+        1168
+      ],
+      "id": "ffafb31d-be1a-4152-8a68-0e341f7c8681",
+      "name": "Upload file1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "dOTQooioTFbHjRlL",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nreturn [{ \"text\": \"Document \"}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        1168
+      ],
+      "id": "70114947-142e-4457-91bc-9ba9ecbbea71",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:3b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        464,
+        960
+      ],
+      "id": "4dce7d22-251e-48a4-88b6-b276ef47a5c9",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "1KxkgukX2d5qt1lm",
+          "name": "Ollama account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent1": {
+      "main": [
+        []
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files to list": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Upload file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "1fb1247e-cbb7-4cb8-9978-34a4a3134530",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dc670b1fe98168d48d6ffc4dd4f78eb45675ed40de1fc6d693d37d3fc3d96652"
+  },
+  "id": "d0rUHUW9W4nI75ma",
+  "tags": [
+    {
+      "updatedAt": "2026-03-13T13:49:34.934Z",
+      "createdAt": "2026-03-13T13:49:34.934Z",
+      "id": "6CB2ET3kritKDdNF",
+      "name": "Marketing Agent"
+    }
+  ]
+}
