@@ -13,10 +13,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2,
       "position": [
-        592,
-        752
+        -640,
+        256
       ],
-      "id": "c0ceca31-fe62-4198-b884-ac1748d36415",
+      "id": "f9b8a189-e7f4-4982-a9c8-94d38393b2d3",
       "name": "AI Agent1"
     },
     {
@@ -29,10 +29,10 @@
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.4,
       "position": [
-        -240,
-        1024
+        -1136,
+        512
       ],
-      "id": "20d50a04-e9b0-4afc-9a06-b679f7a8f28c",
+      "id": "4c83e83a-4dd7-4236-a0af-91388bedaf74",
       "name": "When chat message received",
       "webhookId": "3bb42b8e-5292-43ed-8e7d-e23c5a828640"
     },
@@ -56,14 +56,14 @@
       "type": "n8n-nodes-base.googleDriveTool",
       "typeVersion": 3,
       "position": [
-        720,
-        1008
+        -432,
+        480
       ],
-      "id": "f14e579a-08ef-4d45-b451-158f5fd9966c",
+      "id": "e8b02898-72a7-401c-8291-daf20700428e",
       "name": "Search files to list",
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "dOTQooioTFbHjRlL",
+          "id": "cSakpcjUJJ7fWOvK",
           "name": "Google Drive account"
         }
       }
@@ -76,14 +76,14 @@
       "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
       "typeVersion": 1.3,
       "position": [
-        592,
-        1008
+        -560,
+        480
       ],
-      "id": "b462f58f-9d29-4054-9ee1-93593005e781",
+      "id": "5c3af23b-63c5-4fbf-aca2-5455c2e9b43e",
       "name": "Chat Memory",
       "credentials": {
         "postgres": {
-          "id": "jrVuFQHWZ9pBOfZW",
+          "id": "UqKuWEmJh7MsjD2Q",
           "name": "Postgres account"
         }
       }
@@ -115,16 +115,141 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -32,
-        1024
+        -912,
+        512
       ],
-      "id": "f57a4df4-c5cb-42c7-914a-fb2c61a5dccf",
+      "id": "363c837a-0297-4b8f-b942-6f5035c42c83",
       "name": "If"
     },
     {
       "parameters": {
-        "inputDataFieldName": "={{ $json.files[0].binaryKey }}",
-        "name": "={{ $json.files[0].fileName }}",
+        "model": "llama3.2:3b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        480
+      ],
+      "id": "9218d088-3978-447d-a615-e81f09f9fc40",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "kcYOogQEym7vRgeN",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the original chat message item\nconst chatItem = $('When chat message received').first();\n\n// Check if there's a file\nif (!chatItem.json.files || !chatItem.json.files.length) {\n  throw new Error('No file found in chat message');\n}\n\n// Get file information\nconst fileInfo = chatItem.json.files[0];\nconst binaryKey = fileInfo.binaryKey;\nconst fileName = fileInfo.fileName;\n\n// Get the binary data from the chat item\nconst binaryData = chatItem.binary[binaryKey];\n\nif (!binaryData) {\n  throw new Error(`No binary data found for key: ${binaryKey}`);\n}\n\n// Return a new item with the binary data and the filename\nreturn [{\n  json: {\n    fileName: fileName,\n    binaryKey: binaryKey\n  },\n  binary: {\n    [binaryKey]: binaryData\n  }\n}];"
+      },
+      "id": "06f64d49-b080-4514-8d93-e944acc21cb2",
+      "name": "Prepare upload data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        832
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Return success message for upload\nreturn [{ \n  \"text\": \"Uploaded Document: \" + $json.name,\n  \"success\": true,\n  \"action\": \"upload\"\n}]"
+      },
+      "id": "3ac10bf7-1a51-48da-9195-bde6e416d83c",
+      "name": "Upload success message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Return success message for update\nreturn [{ \n  \"text\": \"Updated Document: \" + $json.name,\n  \"success\": true,\n  \"action\": \"update\"\n}]"
+      },
+      "id": "88f4ff02-9538-4b19-b6d9-5bb535e10d09",
+      "name": "Update success message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        832
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $('When chat message received').item.json.files[0].fileName }}",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1a2nbogZyvkNOFTVr46XdIBEBI9ePDrMu",
+            "mode": "list",
+            "cachedResultName": "Agent",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1a2nbogZyvkNOFTVr46XdIBEBI9ePDrMu"
+          }
+        },
+        "options": {}
+      },
+      "id": "2c824ab2-6f11-4647-a599-46d5e7766638",
+      "name": "Search files and folders1",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -640,
+        832
+      ],
+      "alwaysOutputData": true,
+      "notesInFlow": false,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "cSakpcjUJJ7fWOvK",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "70c58d70-e964-4709-a4dc-a995f785079a",
+              "leftValue": "={{ $('Search files and folders1').item.json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "586abb83-9357-4fb5-b10b-7ba24cc4a6ee",
+      "name": "If2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -80,
+        832
+      ]
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "={{ $json.binaryKey }}",
+        "name": "={{ $json.fileName }}",
         "driveId": {
           "__rl": true,
           "mode": "list",
@@ -139,62 +264,52 @@
         },
         "options": {}
       },
+      "id": "29d70bc6-5f09-42a0-9fa1-04efb3341937",
+      "name": "Upload file",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        240,
-        1168
+        128,
+        656
       ],
-      "id": "ffafb31d-be1a-4152-8a68-0e341f7c8681",
-      "name": "Upload file1",
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "dOTQooioTFbHjRlL",
+          "id": "cSakpcjUJJ7fWOvK",
           "name": "Google Drive account"
         }
       }
     },
     {
       "parameters": {
-        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nreturn [{ \"text\": \"Document \"}]"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        448,
-        1168
-      ],
-      "id": "70114947-142e-4457-91bc-9ba9ecbbea71",
-      "name": "Code in JavaScript"
-    },
-    {
-      "parameters": {
-        "model": "llama3.2:3b",
+        "operation": "update",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Search files and folders1').item.json.id }}",
+          "mode": "id"
+        },
+        "changeFileContent": true,
+        "inputDataFieldName": "={{ $json.binaryKey }}",
+        "newUpdatedFileName": "={{ $json.fileName }}",
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "id": "54a29622-c8b8-4085-956e-46460e5dd566",
+      "name": "update file",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
       "position": [
-        464,
-        960
+        144,
+        832
       ],
-      "id": "4dce7d22-251e-48a4-88b6-b276ef47a5c9",
-      "name": "Ollama Chat Model",
       "credentials": {
-        "ollamaApi": {
-          "id": "1KxkgukX2d5qt1lm",
-          "name": "Ollama account"
+        "googleDriveOAuth2Api": {
+          "id": "cSakpcjUJJ7fWOvK",
+          "name": "Google Drive account"
         }
       }
     }
   ],
   "pinData": {},
   "connections": {
-    "AI Agent1": {
-      "main": [
-        []
-      ]
-    },
     "When chat message received": {
       "main": [
         [
@@ -239,18 +354,7 @@
         ],
         [
           {
-            "node": "Upload file1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Upload file1": {
-      "main": [
-        [
-          {
-            "node": "Code in JavaScript",
+            "node": "Search files and folders1",
             "type": "main",
             "index": 0
           }
@@ -267,6 +371,68 @@
           }
         ]
       ]
+    },
+    "Prepare upload data": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders1": {
+      "main": [
+        [
+          {
+            "node": "Prepare upload data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "update file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Upload success message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update file": {
+      "main": [
+        [
+          {
+            "node": "Update success message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -275,17 +441,17 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "1fb1247e-cbb7-4cb8-9978-34a4a3134530",
+  "versionId": "c3f27cc8-216b-4981-9aab-f3cca4b03f3a",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "dc670b1fe98168d48d6ffc4dd4f78eb45675ed40de1fc6d693d37d3fc3d96652"
   },
-  "id": "d0rUHUW9W4nI75ma",
+  "id": "0lXX46Uze1VXxCXh",
   "tags": [
     {
-      "updatedAt": "2026-03-13T13:49:34.934Z",
-      "createdAt": "2026-03-13T13:49:34.934Z",
-      "id": "6CB2ET3kritKDdNF",
+      "updatedAt": "2026-03-19T23:01:45.173Z",
+      "createdAt": "2026-03-19T23:01:45.173Z",
+      "id": "mRNcL17ZeOqs9zrj",
       "name": "Marketing Agent"
     }
   ]
